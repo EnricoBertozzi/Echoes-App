@@ -16,6 +16,7 @@ import com.nohana.echoes_app.view.activities.home.StudentActivity
 import com.nohana.echoes_app.view.activities.home.TeacherActivity
 import com.nohana.echoes_app.view.components.TitleComponent
 import com.nohana.echoes_app.view.components.LoadingScreen
+import com.nohana.echoes_app.activities.states.LoginState
 import com.nohana.echoes_app.viewmodel.AuthViewModel
 import com.nohana.echoes_app.viewmodel.factory.AuthViewModelFactory
 
@@ -62,7 +63,7 @@ class AuthActivity : ComponentActivity() {
                         is LoginState.Success -> {
                             LaunchedEffect(s) {
                                 startActivity(
-                                    if (s.role == "TEACHER")
+                                    if (s.user.role == "TEACHER")
                                         Intent(this@AuthActivity, TeacherActivity::class.java)
                                     else
                                         Intent(this@AuthActivity, StudentActivity::class.java)
@@ -89,7 +90,7 @@ class AuthActivity : ComponentActivity() {
                         is LoginState.ValidToken -> {
                             LaunchedEffect(s) {
                                 startActivity(
-                                    if (s.role == "TEACHER")
+                                    if (s.user.role == "TEACHER")
                                         Intent(this@AuthActivity, TeacherActivity::class.java)
                                     else
                                         Intent(this@AuthActivity, StudentActivity::class.java)

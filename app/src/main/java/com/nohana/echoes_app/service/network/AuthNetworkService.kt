@@ -9,15 +9,15 @@ import retrofit2.http.POST
 
 interface AuthNetworkService {
 
-    @POST("/api/auth/login")
+    @POST("/api/v1/auth/login")
     suspend fun login(@Body dto: AuthDTO.LoginRequest): Response<Void>;
 
-    @POST("/api/auth/login/2fa")
+    @POST("/api/v1/auth/mfa")
     suspend fun validate2fa(@Body dto: AuthDTO.TwoFactorRequest): Response<AuthDTO.TwoFactorResponse>
 
-    @GET("/api/auth/validate-token")
+    @GET("/api/v1/auth/validate-token")
     suspend fun validateToken(@Header("Authorization") authHeader: String): Response<Unit>
 
-    @GET("/api/auth/logout")
+    @GET("/api/v1/auth/logout")
     suspend fun logout(@Header("Authorization") header: String): Response<Unit>
 }

@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlin.apply
 
-class TokenStorage(private val context: Context) {
+class TokenStorage(private val context: Context): SessionTokenStore {
 
     private val JWT_KEY = "jwt"
     private val sharedPreferences: SharedPreferences by lazy {
@@ -34,19 +34,19 @@ class TokenStorage(private val context: Context) {
         )
     }
 
-    fun setToken(token: String) {
+    override fun setToken(token: String) {
         sharedPreferences
             .edit()
             .putString(JWT_KEY, token)
             .apply()
     }
 
-    fun getToken(): String? {
+    override fun getToken(): String? {
         val token = sharedPreferences.getString(JWT_KEY, null)
         return token;
     }
 
-    fun clear() {
+    override fun clear() {
         sharedPreferences
             .edit()
             .remove(JWT_KEY)

@@ -2,6 +2,7 @@ package com.nohana.echoes_app.view.activities.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -171,13 +172,15 @@ class StudentActivity : ComponentActivity() {
                             BottomTab.SETTINGS -> {
                                 SettingsScreen(
                                     onLogout = {
-                                        authViewModel.logout()
-
-                                        startActivity(
-                                            Intent(this@StudentActivity, MainActivity::class.java)
+                                        authViewModel.logout(
+                                            onComplete = {
+                                                startActivity(Intent(this@StudentActivity, MainActivity::class.java))
+                                                finish()
+                                            },
+                                            onError = { message ->
+                                                Toast.makeText(this@StudentActivity, message, Toast.LENGTH_SHORT).show()
+                                            },
                                         )
-
-                                        finish()
                                     },
                                     onPrivacy = {
                                         startActivity(

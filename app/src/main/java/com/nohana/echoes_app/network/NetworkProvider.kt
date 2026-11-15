@@ -14,8 +14,8 @@ import java.net.URL
 object NetworkProvider {
 
     private val HOSTS = setOf(
-        "echoes.avraham.dev.br",
-        "10.131.109.139"
+        "echoes.avraham.dev.r",
+        "10.131.109.67"
     )
 
     fun buildSecureClient(urlString: String): OkHttpClient {
@@ -36,10 +36,11 @@ object NetworkProvider {
         }
 
         return OkHttpClient.Builder()
-             .certificatePinner(certificatePinner)
-             .hostnameVerifier { host, session ->
-                 HOSTS.contains(host)
-             }
+            .certificatePinner(certificatePinner)
+            .hostnameVerifier { host, session ->
+                HOSTS.contains(host)
+            }
+            .addInterceptor(logging)
             .build()
     }
 
@@ -69,12 +70,13 @@ object NetworkProvider {
                 HOSTS.contains(host)
             }
             .addInterceptor(jwtInteceptor)
+            .addInterceptor(logging)
             .build()
     }
 
     fun getAddress(): String {
-        //return "http://10.131.109.139:8080/"
-        return "https://echoes.avraham.dev.br/"
+        return "http://10.131.109.67:8080"
+        //return "https://echoes.avraham.dev.br/"
     }
 
     fun getRetrofitInstance(path: String, context: Context): Retrofit {

@@ -8,7 +8,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface UserNetworkService {
-    @GET("/api/users/me")
+    @GET("/api/v1/users/me")
     suspend fun getUserInfo(): Response<UserDTO.UserInfoResponseDTO>
 
     @POST("/api/users/me/delete")

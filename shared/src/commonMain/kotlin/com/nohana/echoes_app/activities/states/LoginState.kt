@@ -1,4 +1,6 @@
-package com.nohana.echoes_app.view.activities.auth
+package com.nohana.echoes_app.activities.states
+
+import com.nohana.echoes_app.network.UserProfile
 
 sealed interface LoginState {
     object Loading : LoginState
@@ -8,10 +10,12 @@ sealed interface LoginState {
 
     object Login: LoginState
 
-    data class ValidToken(val role: String): LoginState
+    data class ValidToken(val user: UserProfile) : LoginState
 
-    data class Success(val token: String, val role: String): LoginState
-
+    data class Success(
+        val token: String,
+        val user: UserProfile,
+    ) : LoginState
     data class ValidationError(val emailError: String? = "", val passwordError: String? = ""): LoginState
 
 }

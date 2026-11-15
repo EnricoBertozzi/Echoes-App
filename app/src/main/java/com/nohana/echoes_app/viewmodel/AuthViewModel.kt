@@ -1,15 +1,18 @@
 package com.nohana.echoes_app.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nohana.echoes_app.activities.states.AuthState
+import com.nohana.echoes_app.activities.states.LoginState
+import com.nohana.echoes_app.data.SessionTokenStore
 import com.nohana.echoes_app.data.TokenStorage
+import com.nohana.echoes_app.network.CurrentUserResult
+import com.nohana.echoes_app.network.LoginApi
+import com.nohana.echoes_app.network.MfaResult
 import com.nohana.echoes_app.network.dto.AuthDTO
-import com.nohana.echoes_app.view.activities.auth.LoginState
 import com.nohana.echoes_app.service.network.AuthNetworkService
 import com.nohana.echoes_app.service.network.UserNetworkService
 import com.nohana.echoes_app.service.validation.FieldValidatorService
-import com.nohana.echoes_app.view.states.AuthState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -17,9 +20,7 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 class AuthViewModel(
-    private val authNetworkService: AuthNetworkService,
-    private val userNetworkService: UserNetworkService,
-    private val tokenStorage: TokenStorage
+    private val tokenStorage: SessionTokenStore, private val loginApi: LoginApi
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Login)
@@ -32,9 +33,7 @@ class AuthViewModel(
     val form = _form.asStateFlow()
 
     fun onFormChange(
-        email: String? = null,
-        password: String? = null,
-        code: String? = null
+        email: String? = null, password: String? = null, code: String? = null
     ) {
         _form.update { current ->
             current.copy(
@@ -54,8 +53,7 @@ class AuthViewModel(
         if (emailError != null || passwordError != null) {
             _loginState.update {
                 LoginState.ValidationError(
-                    emailError = emailError?.message,
-                    passwordError = passwordError?.message
+                    emailError = emailError?.message, passwordError = passwordError?.message
                 )
             }
             return
@@ -64,9 +62,8 @@ class AuthViewModel(
         viewModelScope.launch {
             try {
                 _loginState.update { LoginState.Loading }
-                val response = authNetworkService.login(AuthDTO.LoginRequest(email, password))
 
-                if (response.isSuccessful) {
+                if (loginApi.login(email, password)) {
                     _loginState.update { LoginState.TwoFactor(email) }
                     _authState.update { AuthState.Unauthenticated }
                 } else {
@@ -85,97 +82,110 @@ class AuthViewModel(
 
         val codeError = FieldValidatorService.validateCode(code)
         if (codeError != null) {
-            _loginState.update { LoginState.TwoFactor(email, codeError.message) }
+            _loginState.value = LoginState.TwoFactor(email, codeError.message)
             return
         }
 
         viewModelScope.launch {
+            _loginState.value = LoginState.Loading
+
             try {
-                _loginState.update { LoginState.Loading }
-                val response = authNetworkService.validate2fa(
-                    AuthDTO.TwoFactorRequest(email, code)
-                )
+                when (val result = loginApi.confirmMfa(email, code)) {
+                    is MfaResult.Confirmed -> {
+                        when (val profile = loginApi.getCurrentUser(result.token)) {
+                            is CurrentUserResult.Found -> {
+                                tokenStorage.setToken(result.token)
+                                _authState.value = AuthState.Authenticated
+                                _loginState.value = LoginState.Success(result.token, profile.user)
+                                _form.value = AuthForm()
+                            }
 
-                when (response.code()) {
-                    200 -> {
-                        tokenStorage.setToken("${response.body()?.token}")
-                        val userResponse = userNetworkService.getUserInfo()
+                            CurrentUserResult.Unauthorized -> {
+                                _authState.value = AuthState.Unauthenticated
+                                _loginState.value = LoginState.Login
+                            }
 
-                        val role = userResponse.body()?.role
-
-                        _loginState.update { LoginState.Success("${response.body()?.token}", "$role") }
-                        _authState.update { AuthState.Authenticated }
-                        // Limpa o formulário após autenticação bem-sucedida
-                        _form.update { AuthForm() }
+                            CurrentUserResult.Failed -> {
+                                _loginState.value =
+                                    LoginState.Error("Não foi possível carregar o perfil.")
+                            }
+                        }
                     }
-                    400, 401, 403 -> {
-                        _loginState.update { LoginState.TwoFactor(email, "Código Inválido") }
-                        _authState.update { AuthState.Unauthenticated }
+
+                    MfaResult.InvalidCode -> {
+                        _loginState.value = LoginState.TwoFactor(email, "Código inválido")
                     }
-                    500 -> {
-                        _loginState.update { LoginState.Error("Erro Inesperado") }
-                        _authState.update { AuthState.Unauthenticated }
+
+                    MfaResult.Failed -> {
+                        _loginState.value = LoginState.Error("Não foi possível confirmar o código.")
                     }
                 }
             } catch (e: IOException) {
-                _loginState.update { LoginState.Error("Erro de Conexão") }
-                _authState.update { AuthState.Unauthenticated }
+                _loginState.value = LoginState.Error("Erro de conexão.")
             }
         }
     }
 
     fun validateToken() {
         viewModelScope.launch {
-            val token = tokenStorage.getToken() ?: ""
+            val token = tokenStorage.getToken()
 
-            if (token.isBlank()) {
-                _loginState.update { LoginState.Login }
+            if (token.isNullOrBlank()) {
+                _authState.value = AuthState.Unauthenticated
+                _loginState.value = LoginState.Login
                 return@launch
             }
 
-            _loginState.update { LoginState.Loading }
+            _loginState.value = LoginState.Loading
 
             try {
-                val response = authNetworkService.validateToken("Bearer $token")
+                when (val result = loginApi.getCurrentUser(token)) {
+                    is CurrentUserResult.Found -> {
+                        _authState.value = AuthState.Authenticated
+                        _loginState.value = LoginState.ValidToken(result.user)
+                    }
 
-                if (response.isSuccessful) {
-                    val userResponse = userNetworkService.getUserInfo()
+                    CurrentUserResult.Unauthorized -> {
+                        tokenStorage.clear()
+                        _authState.value = AuthState.Unauthenticated
+                        _loginState.value = LoginState.Login
+                    }
 
-                    val role = userResponse.body()?.role
-
-                    _loginState.update { LoginState.ValidToken("$role") }
-                    _authState.update { AuthState.Authenticated }
-                } else {
-                    tokenStorage.setToken("")
-                    _loginState.update { LoginState.Login }
-                    _authState.update { AuthState.Unauthenticated }
+                    CurrentUserResult.Failed -> {
+                        _loginState.value = LoginState.Error("Não foi possível carregar o perfil.")
+                    }
                 }
             } catch (e: IOException) {
-                _loginState.update { LoginState.Error("Erro de Conexão") }
-                _authState.update { AuthState.Unauthenticated }
+                _loginState.value = LoginState.Error("Erro de conexão.")
             }
         }
     }
 
-    fun logout() {
+    fun logout(
+        onComplete: () -> Unit = {},
+        onError: (String) -> Unit = {},
+    ) {
         viewModelScope.launch {
-            val token = tokenStorage.getToken() ?: ""
+            val token = tokenStorage.getToken()
 
-            if (token.isBlank()) {
-                return@launch
-            }
+            try {
+                if (!token.isNullOrBlank() && !loginApi.logout(token)) {
+                    onError("Não foi possível encerrar a sessão. Tente novamente.")
+                    return@launch
+                }
 
-            val response = authNetworkService.logout("Bearer $token")
-            if (response.isSuccessful) {
-                _authState.update { AuthState.Unauthenticated }
-                _form.update { AuthForm() }
+                tokenStorage.clear()
+                _form.value = AuthForm()
+                _authState.value = AuthState.Unauthenticated
+                _loginState.value = LoginState.Login
+                onComplete()
+            } catch (e: IOException) {
+                onError("Erro de conexão ao sair. Tente novamente.")
             }
         }
     }
 }
 
 data class AuthForm(
-    val email : String? = null,
-    val password : String? = null,
-    val code : String? = null
+    val email: String? = null, val password: String? = null, val code: String? = null
 )

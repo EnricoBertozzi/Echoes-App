@@ -1,4 +1,4 @@
-package com.nohana.echoes_app.view.states
+package com.nohana.echoes_app.activities.states
 
 sealed interface AuthState {
     object Authenticated: AuthState

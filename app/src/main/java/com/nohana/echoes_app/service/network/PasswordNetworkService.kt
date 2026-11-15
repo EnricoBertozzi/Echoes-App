@@ -7,19 +7,19 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface PasswordNetworkService {
-    @POST("/api/password/forgot")
+    @POST("/api/v1/password/forgot")
     suspend fun forgotPassword(@Body dto: PasswordDTO.ForgotPasswordRequest): Response<Unit>
 
-    @POST("/api/password/reset")
+    @POST("/api/v1/password/reset")
     suspend fun resetPassword(@Body dto: PasswordDTO.ResetPasswordRequest): Response<Unit>
 
-    @POST("/api/password/validate")
+    @POST("/api/v1/password/validate")
     suspend fun validatePassword(
         @Header("Authorization") authHeader: String,
         @Body dto: PasswordDTO.ValidatePasswordRequest
     ): Response<PasswordDTO.ValidatePasswordResponse>
 
-    @POST("/api/password/change")
+    @POST("/api/v1/password/change")
     suspend fun changePassword(
         @Header("Authorization") authHeader: String,
         @Body dto: PasswordDTO.ChangePasswordRequest
