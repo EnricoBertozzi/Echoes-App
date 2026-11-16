@@ -14,9 +14,10 @@ import com.nohana.echoes_app.network.NetworkProvider
 import com.nohana.echoes_app.ui.theme.EchoesAppTheme
 import com.nohana.echoes_app.view.activities.home.StudentActivity
 import com.nohana.echoes_app.view.activities.home.TeacherActivity
+import com.nohana.echoes_app.view.activities.password.PasswordResetActivity
 import com.nohana.echoes_app.view.components.TitleComponent
 import com.nohana.echoes_app.view.components.LoadingScreen
-import com.nohana.echoes_app.activities.states.LoginState
+import com.nohana.echoes_app.view.states.LoginState
 import com.nohana.echoes_app.viewmodel.AuthViewModel
 import com.nohana.echoes_app.viewmodel.factory.AuthViewModelFactory
 
@@ -32,100 +33,29 @@ class AuthActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         setContent {
-            val state by viewModel.loginState.collectAsState()
-            val form by viewModel.form.collectAsState()
-
-            LaunchedEffect(Unit) {
-                viewModel.validateToken()
-            }
-
             EchoesAppTheme {
                 Column {
                     TitleComponent("Login")
 
-                    when (val s = state) {
-                        LoginState.Login -> {
-                            LoginScreen(
-                                email = form.email.orEmpty(),
-                                password = form.password.orEmpty(),
-                                onEmailChange = { viewModel.onFormChange(email = it) },
-                                onPasswordChange = { viewModel.onFormChange(password = it) },
-                                onLogin = { email, password ->
-                                    viewModel.login(email, password)
-                                }
+                    AuthRoute(
+                        viewModel = viewModel,
+                        onForgotPassword = {
+                            startActivity(
+                                Intent(this@AuthActivity, PasswordResetActivity::class.java)
                             )
-                        }
-
-                        LoginState.Loading -> LoadingScreen()
-
-                        is LoginState.Success -> {
-                            LaunchedEffect(s) {
-                                startActivity(
-                                    if (s.user.role == "TEACHER")
-                                        Intent(this@AuthActivity, TeacherActivity::class.java)
-                                    else
-                                        Intent(this@AuthActivity, StudentActivity::class.java)
-                                )
-                                finish()
+                        },
+                        onAuthenticated = { user ->
+                            val destination = if (user.role == "TEACHER") {
+                                TeacherActivity::class.java
+                            } else {
+                                StudentActivity::class.java
                             }
-                        }
 
-                        is LoginState.TwoFactor -> {
-                            TwoFactorScreen(
-                                email = form.email.orEmpty(),
-                                code = form.code.orEmpty(),
-                                onCodeChange = { viewModel.onFormChange(code = it) },
-                                onTwoFactor = { email, code ->
-                                    viewModel.sendTwoFactor(
-                                        form.email.orEmpty(),
-                                        code
-                                    )
-                                },
-                                error = s.error
-                            )
-                        }
-
-                        is LoginState.ValidToken -> {
-                            LaunchedEffect(s) {
-                                startActivity(
-                                    if (s.user.role == "TEACHER")
-                                        Intent(this@AuthActivity, TeacherActivity::class.java)
-                                    else
-                                        Intent(this@AuthActivity, StudentActivity::class.java)
-                                )
-                                finish()
-                            }
-                        }
-
-                        is LoginState.Error -> {
-                            LoginScreen(
-                                email = form.email.orEmpty(),
-                                password = form.password.orEmpty(),
-                                onEmailChange = { viewModel.onFormChange(email = it) },
-                                onPasswordChange = { viewModel.onFormChange(password = it) },
-                                onLogin = { email, password ->
-                                    viewModel.login(email, password)
-                                },
-                                error = s.error
-                            )
-                        }
-
-                        is LoginState.ValidationError -> {
-                            LoginScreen(
-                                email = form.email.orEmpty(),
-                                password = form.password.orEmpty(),
-                                onEmailChange = { viewModel.onFormChange(email = it) },
-                                onPasswordChange = { viewModel.onFormChange(password = it) },
-                                onLogin = { email, password ->
-                                    viewModel.login(email, password)
-                                },
-                                emailError = s.emailError,
-                                passwordError = s.passwordError
-                            )
-                        }
-                    }
+                            startActivity(Intent(this@AuthActivity, destination))
+                            finish()
+                        },
+                    )
                 }
             }
         }

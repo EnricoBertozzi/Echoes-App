@@ -6,8 +6,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.nohana.echoes_app.data.TokenStorage
 import com.nohana.echoes_app.network.NetworkProvider
 import com.nohana.echoes_app.network.createAndroidLoginApi
-import com.nohana.echoes_app.service.network.AuthNetworkService
-import com.nohana.echoes_app.service.network.UserNetworkService
 import com.nohana.echoes_app.viewmodel.AuthViewModel
 
 class AuthViewModelFactory(

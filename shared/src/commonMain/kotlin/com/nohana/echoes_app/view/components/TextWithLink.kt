@@ -1,6 +1,5 @@
 package com.nohana.echoes_app.view.components
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,12 +12,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nohana.echoes_app.ui.theme.DarkBlue
-import com.nohana.echoes_app.ui.theme.EchoesAppTheme
-import com.nohana.echoes_app.view.activities.password.PasswordResetActivity
 
 @Composable
 fun TextWithLink(
@@ -60,16 +56,6 @@ fun TextWithLink(
                 fontSize = 12.sp
             )
         }
-
-    }
-}
-
-@Preview
-@Composable
-fun TextWithLinkPreview() {
-    EchoesAppTheme(
-        darkTheme = false
-    ) {
 
     }
 }

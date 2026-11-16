@@ -6,11 +6,8 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,10 +26,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nohana.echoes_app.MainActivity
+import com.nohana.echoes_app.R
 import com.nohana.echoes_app.network.NetworkProvider
 import com.nohana.echoes_app.ui.theme.DarkBlue
 import com.nohana.echoes_app.view.components.LoadingScreen
@@ -66,10 +65,13 @@ class TeacherActivity : ComponentActivity() {
      * @property label Título exibido na TopBar quando a aba está ativa.
      * @property iconRes Recurso do ícone exibido na BottomBar.
      */
-    private enum class BottomTab(val label: String, val iconRes: ImageVector) {
-        PROFILE("Perfil", Icons.Rounded.Person),
-        DEVICES("Dispositivos", Icons.Rounded.Home),
-        SETTINGS("Configurações", Icons.Rounded.Settings)
+    private enum class BottomTab(
+        val label: String,
+        @DrawableRes val iconRes: Int
+    ) {
+        PROFILE("Perfil", R.drawable.person),
+        DEVICES("Dispositivos", R.drawable.home),
+        SETTINGS("Configurações", R.drawable.settings)
     }
 
     private val authViewModel: AuthViewModel by viewModels {
@@ -85,13 +87,11 @@ class TeacherActivity : ComponentActivity() {
 
         setContent {
 
-            // ── Efeitos de inicialização ──────────────────────────────────────
             LaunchedEffect(Unit) {
                 authViewModel.validateToken()
                 userViewModel.getUserInfo()
             }
 
-            // ── Estado de aba selecionada — persiste rotação de tela ──────────
             var selectedTab by rememberSaveable { mutableStateOf(BottomTab.DEVICES) }
 
             Scaffold(
@@ -122,7 +122,7 @@ class TeacherActivity : ComponentActivity() {
                                 icon = {
                                     Icon(
                                         modifier = Modifier.size(30.dp),
-                                        imageVector = tab.iconRes,
+                                        painter = painterResource(tab.iconRes),
                                         contentDescription = tab.label
                                     )
                                 },

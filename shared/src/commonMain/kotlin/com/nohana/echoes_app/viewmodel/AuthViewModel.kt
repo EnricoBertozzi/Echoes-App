@@ -2,16 +2,12 @@ package com.nohana.echoes_app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nohana.echoes_app.activities.states.AuthState
-import com.nohana.echoes_app.activities.states.LoginState
+import com.nohana.echoes_app.view.states.AuthState
+import com.nohana.echoes_app.view.states.LoginState
 import com.nohana.echoes_app.data.SessionTokenStore
-import com.nohana.echoes_app.data.TokenStorage
 import com.nohana.echoes_app.network.CurrentUserResult
 import com.nohana.echoes_app.network.LoginApi
 import com.nohana.echoes_app.network.MfaResult
-import com.nohana.echoes_app.network.dto.AuthDTO
-import com.nohana.echoes_app.service.network.AuthNetworkService
-import com.nohana.echoes_app.service.network.UserNetworkService
 import com.nohana.echoes_app.service.validation.FieldValidatorService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +16,8 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 class AuthViewModel(
-    private val tokenStorage: SessionTokenStore, private val loginApi: LoginApi
+    private val tokenStorage: SessionTokenStore,
+    private val loginApi: LoginApi
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Login)

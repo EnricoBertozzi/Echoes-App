@@ -8,10 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.nohana.echoes_app.MainActivity
 import com.nohana.echoes_app.network.NetworkProvider
 import com.nohana.echoes_app.view.activities.terms.TermsActivity

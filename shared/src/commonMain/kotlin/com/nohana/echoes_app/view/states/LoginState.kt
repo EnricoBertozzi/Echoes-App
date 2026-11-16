@@ -1,4 +1,4 @@
-package com.nohana.echoes_app.activities.states
+package com.nohana.echoes_app.view.states
 
 import com.nohana.echoes_app.network.UserProfile
 

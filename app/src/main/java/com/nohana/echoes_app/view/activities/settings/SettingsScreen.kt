@@ -3,13 +3,6 @@ package com.nohana.echoes_app.view.activities.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ExitToApp
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.ExitToApp
-import androidx.compose.material.icons.outlined.Face
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -19,11 +12,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.nohana.echoes_app.R
 import com.nohana.echoes_app.ui.theme.DarkBlue
 import com.nohana.echoes_app.ui.theme.EchoesAppTheme
 import com.nohana.echoes_app.view.components.ConfirmationDialog
-import com.nohana.echoes_app.view.components.TextDialog
 import com.nohana.echoes_app.view.components.TitleComponent
 
 /**
@@ -59,23 +53,18 @@ fun SettingsScreen(
         }
     )
 
-    Scaffold(
-        topBar = {
-            TitleComponent("Configurações")
-        }
-    ) { padding ->
+
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
         ) {
 
             SettingsItem(
                 title = "Privacidade",
                 icon = {
                     Icon(
-                        imageVector = Icons.Outlined.Face,
+                        painter = painterResource(R.drawable.info),
                         contentDescription = null
                     )
                 },
@@ -86,7 +75,7 @@ fun SettingsScreen(
                 title = "Segurança",
                 icon = {
                     Icon(
-                        imageVector = Icons.Outlined.Lock,
+                        painter = painterResource(R.drawable.shield),
                         contentDescription = null
                     )
                 },
@@ -97,7 +86,7 @@ fun SettingsScreen(
                 title = "Logout",
                 icon = {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ExitToApp,
+                        painter = painterResource(R.drawable.logout),
                         contentDescription = null,
                         tint = Color.Black
                     )
@@ -106,7 +95,7 @@ fun SettingsScreen(
                     showLogoutDialog = true
                 }
             )
-        }
+
     }
 }
 

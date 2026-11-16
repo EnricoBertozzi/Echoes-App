@@ -3,9 +3,6 @@ package com.nohana.echoes_app.view.activities.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -17,7 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.nohana.echoes_app.R
 import com.nohana.echoes_app.ui.theme.DarkBlue
 import com.nohana.echoes_app.ui.theme.EchoesAppTheme
 import com.nohana.echoes_app.view.components.ConfirmationDialog
@@ -72,7 +71,7 @@ fun PrivacityScreen(
                 title = "Ver Termos",
                 icon = {
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        painter = painterResource(R.drawable.info),
                         contentDescription = null,
                         tint = DarkBlue
                     )
@@ -84,7 +83,7 @@ fun PrivacityScreen(
                 title = "Revogar Termos",
                 icon = {
                     Icon(
-                        imageVector = Icons.Outlined.Warning,
+                        painter = painterResource(R.drawable.warning),
                         contentDescription = null,
                         tint = Color.Red
                     )

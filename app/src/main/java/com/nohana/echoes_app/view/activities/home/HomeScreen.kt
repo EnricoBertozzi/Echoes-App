@@ -31,7 +31,7 @@ fun HomeScreen() {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            painter = painterResource(R.drawable.vet_icon),
+            painter = painterResource(com.nohana.echoes_app.R.drawable.vet_icon),
             contentDescription = null,
             modifier = Modifier.size(72.dp),
             tint = DarkBlue.copy(alpha = 0.3f)

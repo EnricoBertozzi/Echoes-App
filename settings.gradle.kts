@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Echoes-App"
 include(":app")
- 
+include(":shared")

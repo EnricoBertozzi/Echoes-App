@@ -3,7 +3,11 @@ plugins {
     alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.android.lint)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.kotlin.compose)
 }
+
+
 
 kotlin {
 
@@ -16,6 +20,7 @@ kotlin {
             version = release(37)
         }
         minSdk = 24
+        androidResources.enable = true
 
         withHostTestBuilder {
         }
@@ -25,6 +30,8 @@ kotlin {
         }.configure {
             instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
+
+
     }
 
     // For iOS targets, this is also where you should
@@ -35,12 +42,6 @@ kotlin {
     // project can be found here:
     // https://developer.android.com/kotlin/multiplatform/migrate
     val xcfName = "sharedKit"
-
-    iosX64 {
-        binaries.framework {
-            baseName = xcfName
-        }
-    }
 
     iosArm64 {
         binaries.framework {
@@ -67,6 +68,13 @@ kotlin {
                 implementation("io.ktor:ktor-client-core:${libs.versions.ktor.get()}")
                 implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")
+                api("androidx.lifecycle:lifecycle-viewmodel:2.10.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+                api(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
             }
         }
 
@@ -105,4 +113,8 @@ kotlin {
         }
     }
 
+}
+
+compose.resources {
+    packageOfResClass = "com.nohana.echoes_app.resources"
 }
