@@ -34,6 +34,7 @@ fun ClassroomScreen(
     onDeleteMaterial: (String) -> Unit,
     onDownload: (Classroom, ClassroomMaterial) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenDevices: (Classroom) -> Unit = {},
 ) {
     val classroom = state.detail
 
@@ -80,6 +81,11 @@ fun ClassroomScreen(
                     onEdit = { editId = it.id },
                     onReplace = onReplaceFile,
                     onDelete = { deleteId = it.id },
+                    onOpenDevices = {
+                        if (teacher) {
+                            onOpenDevices(classroom)
+                        }
+                    },
                 )
             }
         }

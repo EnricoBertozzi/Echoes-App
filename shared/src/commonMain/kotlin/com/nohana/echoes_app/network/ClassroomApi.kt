@@ -2,12 +2,16 @@ package com.nohana.echoes_app.classroom
 
 import com.nohana.echoes_app.data.SessionTokenStore
 import com.nohana.echoes_app.network.dto.Classroom
+import com.nohana.echoes_app.network.dto.ClassroomDevice
 import com.nohana.echoes_app.network.dto.ClassroomInvite
 import com.nohana.echoes_app.network.dto.ClassroomMaterial
 import com.nohana.echoes_app.network.dto.ClassroomPage
+import com.nohana.echoes_app.network.dto.DeviceScenarioConfig
 import com.nohana.echoes_app.network.dto.JoinClassroomRequest
 import com.nohana.echoes_app.network.dto.MAX_MATERIAL_BYTES
 import com.nohana.echoes_app.network.dto.MaterialUpload
+import com.nohana.echoes_app.network.dto.PointScenario
+import com.nohana.echoes_app.network.dto.SelectDeviceScenarioRequest
 import com.nohana.echoes_app.network.dto.UpdateMaterialRequest
 import com.nohana.echoes_app.network.dto.materialExtensions
 import io.ktor.client.HttpClient
@@ -168,5 +172,83 @@ class ClassroomApi internal constructor(
                 append(HttpHeaders.ContentDisposition, "filename=\"$filename\"")
             })
         })
+    }
+
+    suspend fun devices(classroomId: String): List<ClassroomDevice> =
+        request(
+            method = HttpMethod.Get,
+            path = "/$classroomId/devices",
+        ).body()
+
+    suspend fun deviceConfig(deviceId: String): DeviceScenarioConfig =
+        scenarioRequest(
+            method = HttpMethod.Get,
+            path = "/devices/$deviceId/scenario",
+        ).body()
+
+    suspend fun pointScenarios(
+        pointId: String,
+        page: Int,
+        size: Int = 20,
+    ): List<PointScenario> =
+        scenarioRequest(
+            method = HttpMethod.Get,
+            path = "/scenarios",
+        ) {
+            parameter("id", pointId)
+            parameter("page", page)
+            parameter("size", size)
+        }.body()
+
+    suspend fun selectDeviceScenario(
+        deviceId: String,
+        pointId: String,
+        scenarioId: String,
+    ) {
+        scenarioRequest(
+            method = HttpMethod.Put,
+            path = "/devices/$deviceId/points/$pointId/scenario",
+        ) {
+            contentType(ContentType.Application.Json)
+            setBody(SelectDeviceScenarioRequest(scenarioId))
+        }
+    }
+
+    private suspend fun scenarioRequest(
+        method: HttpMethod,
+        path: String,
+        configure: HttpRequestBuilder.() -> Unit = {},
+    ): HttpResponse {
+        val apiRoot = base.removeSuffix("/classrooms")
+
+        return client.request("$apiRoot$path") {
+            this.method = method
+            authenticate()
+            configure()
+        }.also { response ->
+            if (!response.status.isSuccess()) {
+                val message = try {
+                    json.decodeFromString<ErrorResponse>(
+                        response.bodyAsText()
+                    ).message
+                } catch (_: IllegalArgumentException) {
+                    null
+                }
+
+                val fallback = when (response.status.value) {
+                    400 -> "O cenário não é válido para este ponto."
+                    401 -> "Sessão expirada. Entre novamente."
+                    403 -> "Você não tem permissão para configurar este dispositivo."
+                    404 -> "Dispositivo, ponto ou cenário não encontrado."
+                    409 -> "A configuração foi alterada. Atualize e tente novamente."
+                    else -> "Não foi possível concluir a operação."
+                }
+
+                throw ClassroomApiException(
+                    response.status.value,
+                    message?.takeIf { it.isNotBlank() } ?: fallback,
+                )
+            }
+        }
     }
 }

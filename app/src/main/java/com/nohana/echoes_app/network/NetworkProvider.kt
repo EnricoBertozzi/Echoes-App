@@ -14,10 +14,11 @@ import java.net.URL
 object NetworkProvider {
 
     private val HOSTS = setOf(
-        "echoes.avraham.dev.r",
+        "echoes.avraham.dev.br",
         "10.131.109.67",
         "10.0.13.129",
-        "192.168.15.15"
+        "192.168.15.15",
+        "3.137.203.217"
     )
 
     fun buildSecureClient(urlString: String): OkHttpClient {
@@ -77,13 +78,11 @@ object NetworkProvider {
     }
 
     fun getAddress(): String {
-        return "http://192.168.15.15:8080"
-        //return "https://echoes.avraham.dev.br/"
+        // return "http://192.168.15.15:8080"
+        return "http://3.137.203.217:18080"
     }
 
     fun getRetrofitInstance(path: String, context: Context): Retrofit {
-
-
         val clientOkHttp = buildSecureClient(path)
 
         return Retrofit.Builder()

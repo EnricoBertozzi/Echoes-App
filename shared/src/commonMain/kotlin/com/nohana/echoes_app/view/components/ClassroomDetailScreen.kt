@@ -28,6 +28,7 @@ fun ClassroomDetailScreen(
     onReplace: (ClassroomMaterial) -> Unit,
     onDelete: (ClassroomMaterial) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenDevices: () -> Unit = {},
 ) {
     val canManage = teacher && !classroom.archived
 
@@ -133,6 +134,20 @@ fun ClassroomDetailScreen(
                             }
                         }
                     }
+                }
+            }
+        }
+
+        if (teacher) {
+            item {
+                OutlinedButton(
+                    onClick = onOpenDevices,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = DarkBlue,
+                    ),
+                ) {
+                    Text("Dispositivos da turma")
                 }
             }
         }

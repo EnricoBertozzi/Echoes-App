@@ -12,6 +12,7 @@ import com.nohana.echoes_app.classroom.AndroidClassroomFiles
 import com.nohana.echoes_app.classroom.ClassroomScreen
 import com.nohana.echoes_app.classroom.ClassroomState
 import com.nohana.echoes_app.classroom.ClassroomViewModel
+import com.nohana.echoes_app.network.dto.Classroom
 
 @Composable
 fun ClassroomRoute(
@@ -20,6 +21,7 @@ fun ClassroomRoute(
     teacher: Boolean,
     addMaterialRequested: Boolean,
     onDismissAddMaterial: () -> Unit,
+    onOpenDevices: (Classroom) -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -174,5 +176,6 @@ fun ClassroomRoute(
 
             saveFile.launch(intent)
         },
+        onOpenDevices = onOpenDevices,
     )
 }

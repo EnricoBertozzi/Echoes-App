@@ -1,10 +1,13 @@
 package com.nohana.echoes_app.view.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.nohana.echoes_app.classroom.ClassroomState
 import com.nohana.echoes_app.network.dto.Classroom
@@ -23,18 +26,18 @@ fun ClassroomAddMaterialButton(
         return
     }
 
-    ExtendedFloatingActionButton(
+
+    FloatingActionButton(
         onClick = onClick,
+        shape = CircleShape,
         containerColor = DarkBlue,
         contentColor = Color.White,
-        icon = {
-            Text(
-                text = "+",
-                style = MaterialTheme.typography.headlineSmall,
-            )
-        },
-        text = { Text("Adicionar material") },
-    )
+    ) {
+        Text(
+            text = "+",
+            style = MaterialTheme.typography.headlineMedium,
+        )
+    }
 }
 
 @Composable
@@ -53,7 +56,6 @@ fun ClassroomCard(
             Text(
                 text = classroom.title,
                 style = MaterialTheme.typography.titleMedium,
-                color = DarkBlue,
             )
 
             Text(

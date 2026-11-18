@@ -22,11 +22,6 @@ class MainActivity : ComponentActivity() {
                         startActivity(
                             Intent(baseContext, AuthActivity::class.java)
                         )
-                    },
-                    onRegister = {
-                        startActivity(
-                            Intent(baseContext, RegisterActivity::class.java)
-                        )
                     }
                 )
             }

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nohana.echoes_app.MainActivity
 import com.nohana.echoes_app.R
+import com.nohana.echoes_app.classroom.ClassroomDevicesRoute
 import com.nohana.echoes_app.classroom.ClassroomViewModel
 import com.nohana.echoes_app.classroom.ClassroomViewModelFactory
 import com.nohana.echoes_app.network.NetworkProvider
@@ -48,6 +49,7 @@ import com.nohana.echoes_app.view.activities.settings.SettingsScreen
 import com.nohana.echoes_app.view.components.ClassroomAddMaterialButton
 import com.nohana.echoes_app.view.states.UserDeleteEvent
 import com.nohana.echoes_app.viewmodel.AuthViewModel
+import com.nohana.echoes_app.viewmodel.DeviceScenarioViewModel
 import com.nohana.echoes_app.viewmodel.UserViewModel
 import com.nohana.echoes_app.viewmodel.factory.AuthViewModelFactory
 import com.nohana.echoes_app.viewmodel.factory.UserViewModelFactory
@@ -79,9 +81,8 @@ class TeacherActivity : ComponentActivity() {
         @DrawableRes val iconRes: Int
     ) {
         PROFILE("Perfil", R.drawable.person),
-        DEVICES("Dispositivos", R.drawable.home),
-        SETTINGS("Configurações", R.drawable.settings),
-        CLASSROOM("Turmas", R.drawable.classroom)
+        CLASSROOM("Turmas", R.drawable.classroom),
+        SETTINGS("Configurações", R.drawable.settings)
     }
 
     private val authViewModel: AuthViewModel by viewModels {
@@ -96,6 +97,10 @@ class TeacherActivity : ComponentActivity() {
         ClassroomViewModelFactory(applicationContext)
     }
 
+    private val deviceScenarioViewModel: DeviceScenarioViewModel by viewModels {
+        ClassroomViewModelFactory(applicationContext)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -106,6 +111,13 @@ class TeacherActivity : ComponentActivity() {
                 userViewModel.getUserInfo()
             }
 
+            var devicesClassroomId by rememberSaveable {
+                mutableStateOf<String?>(null)
+            }
+
+            var devicesClassroomArchived by rememberSaveable {
+                mutableStateOf(false)
+            }
 
             val classroomState by classroomViewModel.state.collectAsState()
 
@@ -113,7 +125,7 @@ class TeacherActivity : ComponentActivity() {
                 mutableStateOf(false)
             }
 
-            var selectedTab by rememberSaveable { mutableStateOf(BottomTab.DEVICES) }
+            var selectedTab by rememberSaveable { mutableStateOf(BottomTab.CLASSROOM) }
 
             LaunchedEffect(selectedTab, classroomState.detail?.id) {
                 addMaterialRequested = false
@@ -123,15 +135,15 @@ class TeacherActivity : ComponentActivity() {
                 topBar = {
                     CenterAlignedTopAppBar(
                         title = { Text(selectedTab.label) },
-                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                            titleContentColor = DarkBlue,
-                        ),
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = DarkBlue,
+                            titleContentColor = Color.White
+                        )
                     )
                 },
                 bottomBar = {
                     NavigationBar(containerColor = DarkBlue) {
 
-                        // Itens na ordem: Perfil | Dispositivos | Configurações
                         BottomTab.entries.forEach { tab ->
                             NavigationBarItem(
                                 selected = selectedTab == tab,
@@ -156,7 +168,10 @@ class TeacherActivity : ComponentActivity() {
                     }
                 },
                 floatingActionButton = {
-                    if (selectedTab == BottomTab.CLASSROOM) {
+                    if (
+                        selectedTab == BottomTab.CLASSROOM &&
+                        devicesClassroomId == null
+                    ) {
                         ClassroomAddMaterialButton(
                             state = classroomState,
                             teacher = true,
@@ -200,10 +215,6 @@ class TeacherActivity : ComponentActivity() {
                 } else {
                     uiState.user?.let { user ->
                         when (selectedTab) {
-                            BottomTab.DEVICES -> {
-                                HomeScreen()
-                            }
-
                             BottomTab.PROFILE -> {
                                 ProfileScreen(user = user)
                             }
@@ -214,15 +225,33 @@ class TeacherActivity : ComponentActivity() {
                                         .fillMaxSize()
                                         .padding(padding),
                                 ) {
-                                    ClassroomRoute(
-                                        viewModel = classroomViewModel,
-                                        state = classroomState,
-                                        teacher = true,
-                                        addMaterialRequested = addMaterialRequested,
-                                        onDismissAddMaterial = {
-                                            addMaterialRequested = false
-                                        },
-                                    )
+                                    val classroomId = devicesClassroomId
+
+                                    if (classroomId != null) {
+                                        ClassroomDevicesRoute(
+                                            classroomId = classroomId,
+                                            classroomArchived = devicesClassroomArchived,
+                                            viewModel = deviceScenarioViewModel,
+                                            onBackToClassroom = {
+                                                devicesClassroomId = null
+                                            },
+                                        )
+                                    } else {
+                                        ClassroomRoute(
+                                            viewModel = classroomViewModel,
+                                            state = classroomState,
+                                            teacher = true,
+                                            addMaterialRequested = addMaterialRequested,
+                                            onDismissAddMaterial = {
+                                                addMaterialRequested = false
+                                            },
+                                            onOpenDevices = { classroom ->
+                                                addMaterialRequested = false
+                                                devicesClassroomArchived = classroom.archived
+                                                devicesClassroomId = classroom.id
+                                            },
+                                        )
+                                    }
                                 }
                             }
 

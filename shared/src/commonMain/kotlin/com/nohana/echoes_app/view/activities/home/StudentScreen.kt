@@ -53,8 +53,9 @@ fun StudentScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(selectedTab.label) },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    titleContentColor = DarkBlue,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = DarkBlue,
+                    titleContentColor = Color.White
                 ),
             )
         },

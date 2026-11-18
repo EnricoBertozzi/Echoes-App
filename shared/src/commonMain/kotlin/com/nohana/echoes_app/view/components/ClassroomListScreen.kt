@@ -38,7 +38,7 @@ fun ClassroomListScreen(
         }
 
         item {
-            OutlinedTextField(
+            TextField(
                 value = search,
                 onValueChange = { search = it },
                 modifier = Modifier.fillMaxWidth(),
@@ -91,7 +91,6 @@ fun ClassroomListScreen(
                     Text(
                         text = "Nenhuma turma encontrada",
                         style = MaterialTheme.typography.titleMedium,
-                        color = DarkBlue,
                     )
 
                     Text(
