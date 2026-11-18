@@ -23,8 +23,6 @@ import com.nohana.echoes_app.view.components.TitleComponent
 /**
  * Tela de configurações do aplicativo.
  *
- * Ainda sem conteúdo. As opções serão definidas e implementadas
- * em momento posterior.
  */
 @Composable
 fun SettingsScreen(

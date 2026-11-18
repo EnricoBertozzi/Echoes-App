@@ -10,7 +10,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.nohana.echoes_app.MainActivity
+import com.nohana.echoes_app.classroom.ClassroomViewModel
+import com.nohana.echoes_app.classroom.ClassroomViewModelFactory
 import com.nohana.echoes_app.network.NetworkProvider
+import com.nohana.echoes_app.view.activities.classrooms.ClassroomRoute
 import com.nohana.echoes_app.view.activities.security.SecurityActivity
 import com.nohana.echoes_app.view.activities.settings.PrivacyActivity
 import com.nohana.echoes_app.view.activities.settings.SettingsScreen
@@ -32,11 +35,16 @@ class StudentActivity : ComponentActivity() {
         UserViewModelFactory(NetworkProvider.getAddress(), applicationContext)
     }
 
+    private val classroomViewModel: ClassroomViewModel by viewModels {
+        ClassroomViewModelFactory(applicationContext)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             val uiState by userViewModel.uiState.collectAsState()
+            val classroomState by classroomViewModel.state.collectAsState()
 
             LaunchedEffect(Unit) {
                 authViewModel.validateToken()
@@ -59,7 +67,13 @@ class StudentActivity : ComponentActivity() {
                 } else {
                     uiState.user?.let { user ->
                         when (selectedTab) {
-                            StudentTab.CLASS -> HomeScreen()
+                            StudentTab.CLASS -> ClassroomRoute(
+                                viewModel = classroomViewModel,
+                                state = classroomState,
+                                teacher = false,
+                                addMaterialRequested = false,
+                                onDismissAddMaterial = {},
+                            )
 
                             StudentTab.PROFILE -> ProfileScreen(user = user)
 

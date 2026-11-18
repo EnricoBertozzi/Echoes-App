@@ -7,7 +7,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,18 +29,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nohana.echoes_app.MainActivity
 import com.nohana.echoes_app.R
+import com.nohana.echoes_app.classroom.ClassroomViewModel
+import com.nohana.echoes_app.classroom.ClassroomViewModelFactory
 import com.nohana.echoes_app.network.NetworkProvider
 import com.nohana.echoes_app.ui.theme.DarkBlue
+import com.nohana.echoes_app.view.activities.classrooms.ClassroomRoute
+import com.nohana.echoes_app.view.activities.security.SecurityActivity
+import com.nohana.echoes_app.view.activities.settings.PrivacyActivity
 import com.nohana.echoes_app.view.components.LoadingScreen
 import com.nohana.echoes_app.view.screens.ProfileScreen
 import com.nohana.echoes_app.view.activities.settings.SettingsScreen
+import com.nohana.echoes_app.view.components.ClassroomAddMaterialButton
 import com.nohana.echoes_app.view.states.UserDeleteEvent
 import com.nohana.echoes_app.viewmodel.AuthViewModel
 import com.nohana.echoes_app.viewmodel.UserViewModel
@@ -71,7 +80,8 @@ class TeacherActivity : ComponentActivity() {
     ) {
         PROFILE("Perfil", R.drawable.person),
         DEVICES("Dispositivos", R.drawable.home),
-        SETTINGS("Configurações", R.drawable.settings)
+        SETTINGS("Configurações", R.drawable.settings),
+        CLASSROOM("Turmas", R.drawable.classroom)
     }
 
     private val authViewModel: AuthViewModel by viewModels {
@@ -80,6 +90,10 @@ class TeacherActivity : ComponentActivity() {
 
     private val userViewModel: UserViewModel by viewModels {
         UserViewModelFactory(NetworkProvider.getAddress(), applicationContext)
+    }
+
+    private val classroomViewModel: ClassroomViewModel by viewModels {
+        ClassroomViewModelFactory(applicationContext)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,23 +106,26 @@ class TeacherActivity : ComponentActivity() {
                 userViewModel.getUserInfo()
             }
 
+
+            val classroomState by classroomViewModel.state.collectAsState()
+
+            var addMaterialRequested by rememberSaveable {
+                mutableStateOf(false)
+            }
+
             var selectedTab by rememberSaveable { mutableStateOf(BottomTab.DEVICES) }
+
+            LaunchedEffect(selectedTab, classroomState.detail?.id) {
+                addMaterialRequested = false
+            }
 
             Scaffold(
                 topBar = {
                     CenterAlignedTopAppBar(
-                        title = {
-                            Text(
-                                text = selectedTab.label,
-                                fontSize = 22.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = DarkBlue,
-                            titleContentColor = Color.White
-                        )
+                        title = { Text(selectedTab.label) },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            titleContentColor = DarkBlue,
+                        ),
                     )
                 },
                 bottomBar = {
@@ -137,15 +154,26 @@ class TeacherActivity : ComponentActivity() {
                             )
                         }
                     }
-                }
+                },
+                floatingActionButton = {
+                    if (selectedTab == BottomTab.CLASSROOM) {
+                        ClassroomAddMaterialButton(
+                            state = classroomState,
+                            teacher = true,
+                            onClick = {
+                                addMaterialRequested = true
+                            },
+                        )
+                    }
+                },
 
-            ) { padding ->
+                ) { padding ->
                 val uiState by userViewModel.uiState.collectAsState()
 
                 LaunchedEffect(Unit) {
 
                     userViewModel.event.collect { event ->
-                        when(event) {
+                        when (event) {
                             UserDeleteEvent.DeleteAccountSuccess -> {
                                 startActivity(
                                     Intent(
@@ -159,6 +187,7 @@ class TeacherActivity : ComponentActivity() {
                             is UserDeleteEvent.Error -> {
                                 // snackbar
                             }
+
                             is UserDeleteEvent.DeleteRequestSucess -> {
 
                             }
@@ -176,28 +205,73 @@ class TeacherActivity : ComponentActivity() {
                             }
 
                             BottomTab.PROFILE -> {
-                                ProfileScreen(
-                                    user = user
-                                )
+                                ProfileScreen(user = user)
+                            }
+
+                            BottomTab.CLASSROOM -> {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(padding),
+                                ) {
+                                    ClassroomRoute(
+                                        viewModel = classroomViewModel,
+                                        state = classroomState,
+                                        teacher = true,
+                                        addMaterialRequested = addMaterialRequested,
+                                        onDismissAddMaterial = {
+                                            addMaterialRequested = false
+                                        },
+                                    )
+                                }
                             }
 
                             BottomTab.SETTINGS -> {
-                                SettingsScreen(
-                                    onLogout = {
-                                        authViewModel.logout(
-                                            onComplete = {
-                                                startActivity(Intent(this@TeacherActivity, MainActivity::class.java))
-                                                finish()
-                                            },
-                                            onError = { message ->
-                                                Toast.makeText(this@TeacherActivity, message, Toast.LENGTH_SHORT).show()
-                                            },
-                                        )
-                                    },
-                                    onPrivacy = { },
-                                    onSecurity = { },
-                                    onDeleteAccount = userViewModel::deleteAccount
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(padding)
+                                ) {
+                                    SettingsScreen(
+                                        onLogout = {
+                                            authViewModel.logout(
+                                                onComplete = {
+                                                    startActivity(
+                                                        Intent(
+                                                            this@TeacherActivity,
+                                                            MainActivity::class.java
+                                                        )
+                                                    )
+                                                    finish()
+                                                },
+                                                onError = { message ->
+                                                    Toast.makeText(
+                                                        this@TeacherActivity,
+                                                        message,
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            )
+                                        },
+                                        onPrivacy = {
+                                            startActivity(
+                                                Intent(
+                                                    this@TeacherActivity,
+                                                    PrivacyActivity::class.java
+                                                )
+                                            )
+                                        },
+                                        onSecurity = {
+                                            startActivity(
+                                                Intent(
+                                                    this@TeacherActivity,
+                                                    SecurityActivity::class.java
+                                                )
+                                            )
+                                        },
+                                        onDeleteAccount = userViewModel::deleteAccount
+                                    )
+                                }
                             }
                         }
                     }

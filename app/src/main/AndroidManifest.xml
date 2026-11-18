@@ -48,6 +48,10 @@
         <activity android:name=".view.activities.home.StudentActivity" />
         <activity android:name=".view.activities.terms.TermsActivity" />
         <activity android:name=".view.activities.terms.TermsViewerActivity" />
+        <activity
+            android:name=".view.activities.classrooms.ClassroomActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

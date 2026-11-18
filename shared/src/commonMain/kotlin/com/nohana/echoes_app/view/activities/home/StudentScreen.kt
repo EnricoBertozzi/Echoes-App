@@ -12,6 +12,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,14 +42,20 @@ enum class StudentTab(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentScreen(
+    floatingActionButton: @Composable (StudentTab) -> Unit = {},
     content: @Composable (StudentTab) -> Unit,
 ) {
-    var selectedTab by rememberSaveable { mutableStateOf(StudentTab.CLASS) }
+    var selectedTab by rememberSaveable {
+        mutableStateOf(StudentTab.CLASS)
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(selectedTab.label) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    titleContentColor = DarkBlue,
+                ),
             )
         },
         bottomBar = {
@@ -64,21 +71,30 @@ fun StudentScreen(
                                 modifier = Modifier.size(30.dp),
                             )
                         },
-                        label = { Text(tab.label, fontSize = 10.sp) },
+                        label = {
+                            Text(tab.label, fontSize = 10.sp)
+                        },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = DarkBlue,
-                            unselectedIconColor = Color.White.copy(alpha = 0.7f),
+                            unselectedIconColor = Color.White.copy(
+                                alpha = 0.7f
+                            ),
                             selectedTextColor = Color.White,
-                            unselectedTextColor = Color.White.copy(alpha = 0.7f),
+                            unselectedTextColor = Color.White.copy(
+                                alpha = 0.7f
+                            ),
                             indicatorColor = Color.White,
                         ),
                     )
                 }
             }
         },
+        floatingActionButton = {
+            floatingActionButton(selectedTab)
+        },
     ) { innerPadding ->
         Box(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {

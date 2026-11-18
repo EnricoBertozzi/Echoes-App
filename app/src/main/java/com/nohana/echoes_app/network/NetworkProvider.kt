@@ -15,7 +15,9 @@ object NetworkProvider {
 
     private val HOSTS = setOf(
         "echoes.avraham.dev.r",
-        "10.131.109.67"
+        "10.131.109.67",
+        "10.0.13.129",
+        "192.168.15.15"
     )
 
     fun buildSecureClient(urlString: String): OkHttpClient {
@@ -75,7 +77,7 @@ object NetworkProvider {
     }
 
     fun getAddress(): String {
-        return "http://10.131.109.67:8080"
+        return "http://192.168.15.15:8080"
         //return "https://echoes.avraham.dev.br/"
     }
 
